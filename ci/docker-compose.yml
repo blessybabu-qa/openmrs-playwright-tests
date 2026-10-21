@@ -1,6 +1,7 @@
 # OpenMRS 3 reference application for CI, based on the official compose file
 # (github.com/openmrs/openmrs-distro-referenceapplication), pinned to a release.
 # The database credentials only exist inside this throwaway container network.
+# The faster 3.8.0-no-demo backend can't be used: it has no login locations configured.
 services:
   gateway:
     image: openmrs/openmrs-reference-application-3-gateway:3.8.0

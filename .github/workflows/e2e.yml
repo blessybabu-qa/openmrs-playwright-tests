@@ -16,7 +16,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 60
+    timeout-minutes: 75
     env:
       BASE_URL: http://localhost
       OPENMRS_USERNAME: ${{ secrets.OPENMRS_USERNAME }}
@@ -41,21 +41,22 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      # The first start creates the database and generates demo patients, which can take 20+ minutes
+      # The first start installs OpenMRS and generates demo patients: about 22 minutes on an 8-CPU machine,
+      # longer on GitHub's smaller runners
       - name: Wait for OpenMRS to be ready
         run: |
-          for attempt in $(seq 1 180); do
+          for attempt in $(seq 1 270); do
             status=$(curl -s -o session.json -w '%{http_code} %{redirect_url}' -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" || true)
             if [[ "$status" == 200* ]] && grep -q '"authenticated":true' session.json; then
               echo "OpenMRS is ready"
               exit 0
             fi
-            # HTTP 000/502/503 = still starting; HTTP 200 but not authenticated = check the secrets;
-            # HTTP 302 shows where OpenMRS redirects to
-            echo "Waiting for OpenMRS (attempt $attempt): HTTP $status"
+            # HTTP 302 to /initialsetup = still installing; HTTP 200 but not authenticated = check the secrets.
+            # sed removes the username and password that curl puts into the redirect address.
+            echo "Waiting for OpenMRS (attempt $attempt): HTTP $status" | sed 's#//[^@/]*@#//#'
             sleep 10
           done
-          echo "OpenMRS did not start within 30 minutes"
+          echo "OpenMRS did not start within 45 minutes"
           exit 1
 
       - name: Run tests

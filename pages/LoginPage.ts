@@ -35,7 +35,8 @@ export class LoginPage {
     await this.page.waitForURL(/\/home|\/login\/location/);
 
     if (this.page.url().includes('/login/location')) {
-      await this.page.getByRole('radio', { name: location }).check();
+      // Click the label: the styled radio circle covers the real input, like on the registration form
+      await this.page.getByText(location, { exact: true }).click();
       await this.confirmLocationButton.click();
       await this.page.waitForURL(/\/home/);
     }
