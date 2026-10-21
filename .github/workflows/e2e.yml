@@ -45,12 +45,13 @@ jobs:
       - name: Wait for OpenMRS to be ready
         run: |
           for attempt in $(seq 1 180); do
-            status=$(curl -s -o session.json -w '%{http_code}' -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" || true)
-            if [ "$status" = "200" ] && grep -q '"authenticated":true' session.json; then
+            status=$(curl -s -o session.json -w '%{http_code} %{redirect_url}' -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" || true)
+            if [[ "$status" == 200* ]] && grep -q '"authenticated":true' session.json; then
               echo "OpenMRS is ready"
               exit 0
             fi
-            # HTTP 000/502/503 = still starting; HTTP 200 but not authenticated = check the secrets
+            # HTTP 000/502/503 = still starting; HTTP 200 but not authenticated = check the secrets;
+            # HTTP 302 shows where OpenMRS redirects to
             echo "Waiting for OpenMRS (attempt $attempt): HTTP $status"
             sleep 10
           done
