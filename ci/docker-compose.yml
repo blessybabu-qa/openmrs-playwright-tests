@@ -1,0 +1,42 @@
+# OpenMRS 3 reference application for CI, based on the official compose file
+# (github.com/openmrs/openmrs-distro-referenceapplication), pinned to a release.
+# The database credentials only exist inside this throwaway container network.
+services:
+  gateway:
+    image: openmrs/openmrs-reference-application-3-gateway:3.8.0
+    ports:
+      - "80:80"
+    depends_on:
+      - frontend
+      - backend
+
+  frontend:
+    image: openmrs/openmrs-reference-application-3-frontend:3.8.0
+    environment:
+      SPA_PATH: /openmrs/spa
+      API_URL: /openmrs
+      SPA_CONFIG_URLS: /openmrs/spa/config-core_demo.json
+    depends_on:
+      - backend
+
+  backend:
+    image: openmrs/openmrs-reference-application-3-backend:3.8.0
+    environment:
+      OMRS_CONFIG_MODULE_WEB_ADMIN: "true"
+      OMRS_CONFIG_AUTO_UPDATE_DATABASE: "true"
+      OMRS_CONFIG_CREATE_TABLES: "true"
+      OMRS_CONFIG_CONNECTION_SERVER: db
+      OMRS_CONFIG_CONNECTION_DATABASE: openmrs
+      OMRS_CONFIG_CONNECTION_USERNAME: openmrs
+      OMRS_CONFIG_CONNECTION_PASSWORD: openmrs
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11.7
+    command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    environment:
+      MYSQL_DATABASE: openmrs
+      MYSQL_USER: openmrs
+      MYSQL_PASSWORD: openmrs
+      MYSQL_ROOT_PASSWORD: openmrs

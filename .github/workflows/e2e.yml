@@ -1,0 +1,76 @@
+name: E2E tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Adds a "Run workflow" button in the Actions tab to start a run by hand
+  workflow_dispatch:
+    inputs:
+      project:
+        description: Which tests to run
+        type: choice
+        options: [all, ui, hybrid]
+        default: all
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      BASE_URL: http://localhost
+      OPENMRS_USERNAME: ${{ secrets.OPENMRS_USERNAME }}
+      OPENMRS_PASSWORD: ${{ secrets.OPENMRS_PASSWORD }}
+      OPENMRS_LOCATION: Outpatient Clinic
+      HEADLESS: "true"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start OpenMRS in Docker
+        run: docker compose -f ci/docker-compose.yml up -d
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      # The first start creates the database, which can take 10+ minutes
+      - name: Wait for OpenMRS to be ready
+        run: |
+          for attempt in $(seq 1 90); do
+            if curl -sf -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" | grep -q '"authenticated":true'; then
+              echo "OpenMRS is ready"
+              exit 0
+            fi
+            echo "Waiting for OpenMRS (attempt $attempt)"
+            sleep 10
+          done
+          echo "OpenMRS did not start within 15 minutes"
+          exit 1
+
+      - name: Run tests
+        run: |
+          if [ "${{ inputs.project }}" = "ui" ] || [ "${{ inputs.project }}" = "hybrid" ]; then
+            npx playwright test --project=${{ inputs.project }}
+          else
+            npx playwright test
+          fi
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Show OpenMRS logs on failure
+        if: failure()
+        run: docker compose -f ci/docker-compose.yml logs --tail=200 backend
