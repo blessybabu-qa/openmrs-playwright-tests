@@ -16,7 +16,7 @@ on:
 jobs:
   e2e:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
     env:
       BASE_URL: http://localhost
       OPENMRS_USERNAME: ${{ secrets.OPENMRS_USERNAME }}
@@ -41,18 +41,20 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
-      # The first start creates the database, which can take 10+ minutes
+      # The first start creates the database and generates demo patients, which can take 20+ minutes
       - name: Wait for OpenMRS to be ready
         run: |
-          for attempt in $(seq 1 90); do
-            if curl -sf -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" | grep -q '"authenticated":true'; then
+          for attempt in $(seq 1 180); do
+            status=$(curl -s -o session.json -w '%{http_code}' -u "$OPENMRS_USERNAME:$OPENMRS_PASSWORD" "$BASE_URL/openmrs/ws/rest/v1/session" || true)
+            if [ "$status" = "200" ] && grep -q '"authenticated":true' session.json; then
               echo "OpenMRS is ready"
               exit 0
             fi
-            echo "Waiting for OpenMRS (attempt $attempt)"
+            # HTTP 000/502/503 = still starting; HTTP 200 but not authenticated = check the secrets
+            echo "Waiting for OpenMRS (attempt $attempt): HTTP $status"
             sleep 10
           done
-          echo "OpenMRS did not start within 15 minutes"
+          echo "OpenMRS did not start within 30 minutes"
           exit 1
 
       - name: Run tests
