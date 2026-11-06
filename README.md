@@ -2,6 +2,10 @@
 
 End-to-end tests for the [OpenMRS 3](https://o3.openmrs.org) electronic medical record system, written in **Playwright + TypeScript**.
 
+## How this project was built
+
+AI-first with [Claude Code](https://claude.com/claude-code). I decided the scope, risks, priorities, scenarios and test data. Claude Code drafted the test plan, manual test cases and test code, and I reviewed and corrected every change.
+
 ## Highlights
 
 - **Layered framework pattern**: reusable **components** (patient banner, side workspace, vitals form, generic data table, left navigation) → **page objects** built from them → **Playwright fixtures** that hand everything to the tests. Tests contain no locators or URLs, only steps and assertions.
