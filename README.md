@@ -28,7 +28,9 @@ fixtures.ts   page objects, API client, apiPatient, automatic cleanup
 tests/
   ui/         auth.setup, login, registration
   hybrid/     patient-search, visit, vitals
-docs/         defects.md: defects found while testing
+docs/         TEST-PLAN.md: scope, risk, what is automated or manual and why, environments, entry/exit criteria
+              MANUAL-TEST-CASES.md: 12 manual test cases and 3 exploratory charters
+              defects.md: defects found while testing
 ```
 
 ## Test coverage
@@ -42,6 +44,11 @@ docs/         defects.md: defects found while testing
 | Vitals | Record vitals, check all values and BMI 22.9 in the tables · temperature 50 and SpO2 120 rejected, nothing saved (checked via API) · critically high pulse flagged |
 
 17 tests, plus a login setup step that runs once and is reused through `storageState`.
+
+## Test plan and manual tests
+
+- [Test plan](docs/TEST-PLAN.md): risk per module, test types, what is automated, what is checked by hand and why, test data, environments, entry and exit criteria.
+- [Manual test cases](docs/MANUAL-TEST-CASES.md): 12 cases for things that are not automated (lockout, logout, duplicate patients, same-name search, ending a visit, vitals warnings and limits) and 3 exploratory charters linked to DEF-01 to DEF-03.
 
 ## Run
 
