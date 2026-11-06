@@ -2,7 +2,7 @@ name: E2E tests
 
 on:
   push:
-    branches: [main]
+    branches: [master]
   pull_request:
   # Adds a "Run workflow" button in the Actions tab to start a run by hand
   workflow_dispatch:

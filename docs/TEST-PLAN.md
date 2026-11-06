@@ -115,10 +115,8 @@ MTC-xx and EC-xx are in [MANUAL-TEST-CASES.md](MANUAL-TEST-CASES.md).
 | Version | Latest, can change without notice | OpenMRS 3.8.0, pinned |
 | Browser | Chromium, **headed** (the demo blocks headless browsers) | Chromium, headless |
 | Workers | 1 (shared with other people) | 2 |
-| Used for | Local runs, manual and exploratory testing | Automated runs on pull requests or by hand; lockout tests |
+| Used for | Local runs, manual and exploratory testing | Automated runs on every push to `master`, on pull requests or by hand; lockout tests |
 | Start-up | Always running | 20–45 minutes on first start |
-
-**Note:** the CI workflow runs on pushes to `main`, but this repository uses `master`. Until that is changed, CI only runs on pull requests and manual runs.
 
 ## Entry criteria
 

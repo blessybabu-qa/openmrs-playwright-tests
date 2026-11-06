@@ -76,7 +76,7 @@ The public demo blocks headless browsers, so tests run headed locally. Workers a
 
 GitHub Actions (`.github/workflows/e2e.yml`) starts OpenMRS 3.8.0 in **Docker** (`ci/docker-compose.yml`), waits until it is ready, runs the tests **headless** and uploads the HTML report.
 
-- Runs on every push to `main` and on pull requests
+- Runs on every push to `master` and on pull requests
 - **Manual run:** Actions tab → *E2E tests* → *Run workflow*, then choose `all`, `ui` or `hybrid`
 - Needs two repository secrets: `OPENMRS_USERNAME` and `OPENMRS_PASSWORD` (`admin` / `Admin123` for the Docker image)
 
